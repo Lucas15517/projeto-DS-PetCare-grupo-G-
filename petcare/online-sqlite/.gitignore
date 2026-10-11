@@ -1,0 +1,19 @@
+# Dados locais e informações privadas
+data/*
+!data/.gitkeep
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+.env
+.env.*
+!.env.example
+
+# Dependências e arquivos temporários
+node_modules/
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
