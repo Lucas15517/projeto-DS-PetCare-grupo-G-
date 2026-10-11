@@ -1,35 +1,36 @@
-# PetCare — Grupo G
+# PetCare — Projeto de Desenvolvimento de Sistemas | Grupo G
 
-**Curso Técnico de Desenvolvimento de Sistemas — Turma 3A**
+**Grupo:** Lucas, Gabriel Luan e Leonardo — Turma 3A.
 
-**Equipe:** Lucas, Gabriel Luan e Leonardo.
+Este repositório guarda o código do PetCare, um site de pet shop com login, cadastro de pets, serviços e agendamentos. O projeto foi feito para demonstrar os fundamentos do curso técnico de Desenvolvimento de Sistemas.
 
-O PetCare é um sistema web para cadastro e login de clientes, cadastro de pets, consulta de serviços e agendamento de atendimentos.
+## Qual pasta devo abrir?
 
-## Versão para a escola — Node.js 20
+| Pasta | Quando usar | Banco de dados | Node.js |
+|---|---|---|---|
+| [`escola-node20`](escola-node20/) | **Apresentação no computador da escola**, sem precisar instalar programas. | Arquivo JSON local | Node 20 |
+| [`online-sqlite`](online-sqlite/) | **Versão para hospedar na internet**, com banco relacional SQLite. | SQLite | Node 22+ (Docker usa Node 24) |
 
-A pasta `escola-node20/` contém os códigos HTML, CSS, JavaScript, Node.js e testes.
+> **O site ainda não está hospedado na internet.** O código da versão online está pronto, mas falta configurar uma conta de hospedagem e gerar o link HTTPS.
 
-**Como executar:**
-1. Tenha Node.js 20 ou mais recente disponível (não requer instalação de bibliotecas).
-2. Entre na pasta `petcare/escola-node20`.
-3. Execute `node server.js` (ou abra `INICIAR_ESCOLA_WINDOWS.bat` no Windows).
-4. Acesse http://localhost:3000.
+## Onde estão as linhas de código?
 
-**Como testar:** execute `node test.js` na pasta.
+Nas duas versões, os arquivos principais são:
 
-## Tecnologias
-- HTML semântico e CSS responsivo
-- JavaScript no navegador para interação com a API
-- Node.js e API HTTP REST
-- Armazenamento JSON local para compatibilidade com Node 20, com autenticação, hash de senha e bloqueio de horários duplicados
+- `public/index.html`: HTML — estrutura, campos e botões.
+- `public/style.css`: CSS — aparência, responsividade e acessibilidade.
+- `public/app.js`: JavaScript — interações e requisições à API.
+- `server.js`: Node.js — API, autenticação e armazenamento de dados.
+- `test.js`: testes automatizados.
 
-**Importante:** a versão Node 20 da escola utiliza JSON, não SQLite. Não envie os dados locais nem senhas para o GitHub.
+## Como iniciar na escola
 
-## Projeto escolar
-A apresentação inclui acessibilidade, usabilidade, programação web, APIs, persistência, CRUD, validação, segurança, testes e controle de versões.
+Entre em [`escola-node20/`](escola-node20/) e execute `INICIAR_ESCOLA_WINDOWS.bat` (ou `node server.js`). Abra `http://localhost:3000` e use **contas fictícias**.
 
-Arquivos detalhados: `escola-node20/FUNDAMENTOS_DO_CURSO.md`.
+## Como publicar a versão online
 
-### Privacidade
-Use dados fictícios nos testes. O serviço está preparado para apresentação local e não substitui uma implantação profissional em produção.
+Leia o [guia simplificado de hospedagem](online-sqlite/GUIA_HOSPEDAGEM_RAILWAY.md). Na Railway, a **Root Directory** é `/petcare/online-sqlite`. Para não perder agendamentos ao reiniciar, a versão online precisa de **volume persistente** e da variável secreta `PETCARE_SECRET`.
+
+**Segurança:** não envie senhas, tokens, arquivos `.env` ou bases locais (`data/`, `*.sqlite`) para o GitHub. Os arquivos `.gitignore` foram configurados para ajudar a evitar isso.
+
+O código e os dados de testes são educacionais; não use dados reais de clientes sem uma revisão completa de privacidade e segurança.
