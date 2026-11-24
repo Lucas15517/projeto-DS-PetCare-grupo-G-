@@ -9,6 +9,57 @@ const { test } = require('node:test');
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'petcare-tests-'));
 process.env.PETCARE_DATA_DIR = temporaryDirectory;
 process.env.PETCARE_SECRET = 'segredo-de-teste-com-mais-de-32-caracteres';
+
+// No modo SQLite, crie um banco do esquema antigo para validar a migração real.
+if (process.env.PETCARE_STORAGE === 'sqlite') {
+  const { DatabaseSync } = require('node:sqlite');
+  const legacyDb = new DatabaseSync(path.join(temporaryDirectory, 'petcare.sqlite'));
+  legacyDb.exec(`
+    PRAGMA foreign_keys = ON;
+    CREATE TABLE users (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      salt TEXT NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'cliente'
+    );
+    CREATE TABLE pets (
+      id INTEGER PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      name TEXT NOT NULL,
+      species TEXT NOT NULL,
+      breed TEXT DEFAULT '',
+      age INTEGER DEFAULT 0
+    );
+    CREATE TABLE services (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      price REAL NOT NULL
+    );
+    CREATE TABLE appointments (
+      id INTEGER PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      pet_id INTEGER NOT NULL REFERENCES pets(id),
+      service_id INTEGER NOT NULL REFERENCES services(id),
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'agendado',
+      note TEXT DEFAULT ''
+    );
+    CREATE UNIQUE INDEX unique_active_slot
+      ON appointments(date, time) WHERE status = 'agendado';
+    INSERT INTO users (id, name, email, salt, password_hash, role)
+      VALUES (700, 'Conta legada', 'legado@example.test', 'salt-legado', 'hash-legado', 'cliente');
+    INSERT INTO pets (id, user_id, name, species, breed, age)
+      VALUES (700, 700, 'Pet legado', 'Cachorro', 'SRD', 4);
+    INSERT INTO services (id, name, price) VALUES (1, 'Banho', 45.00);
+    INSERT INTO appointments (id, user_id, pet_id, service_id, date, time, status, note)
+      VALUES (700, 700, 700, 1, '2099-10-01', '10:00', 'agendado', 'Registro migrado');
+  `);
+  legacyDb.close();
+}
+
 const { server, _testing, store } = require('./server');
 
 test('PetCare: segurança, agendamentos, histórico, orientações e limites', async (t) => {
@@ -34,6 +85,17 @@ test('PetCare: segurança, agendamentos, histórico, orientações e limites', a
   }
 
   if (store.mode === 'sqlite') {
+    await t.test('migração preserva usuários, pets, serviços e agendamentos antigos', () => {
+      const legacyUser = store.getUserById(700);
+      assert.equal(legacyUser.name, 'Conta legada');
+      assert.equal(store.getPet(700, 700).name, 'Pet legado');
+      assert.equal(store.getService(1).price_cents, 4500);
+      const legacyAppointments = store.listAppointments(700);
+      assert.equal(legacyAppointments.length, 1);
+      assert.equal(legacyAppointments[0].pet_name, 'Pet legado');
+      assert.equal(legacyAppointments[0].note, 'Registro migrado');
+    });
+
     await t.test('SQLite mantém as chaves estrangeiras ativas', () => {
       assert.equal(store._testing.foreignKeysEnabled(), 1);
       assert.throws(() => store.createPet({
@@ -83,6 +145,28 @@ test('PetCare: segurança, agendamentos, histórico, orientações e limites', a
   }, accountB.data.token);
   assert.equal(petA.status, 201);
   assert.equal(petB.status, 201);
+
+  const inconsistentAppointment = store.createAppointment({
+    user_id: accountA.data.user.id,
+    pet_id: petB.data.id,
+    service_id: 1,
+    date: '2099-12-01',
+    time: '17:00',
+    note: 'Registro inconsistente para teste de isolamento'
+  });
+  store.updateAppointmentStatus(
+    accountA.data.user.id,
+    inconsistentAppointment.id,
+    'cancelado'
+  );
+
+  await t.test('histórico não revela dados de pets pertencentes a outra conta', () => {
+    const appointments = store.listAppointments(accountA.data.user.id);
+    assert.equal(
+      appointments.some((appointment) => appointment.id === inconsistentAppointment.id),
+      false
+    );
+  });
 
   await t.test('um usuário não acessa o pet de outra conta', async () => {
     const result = await request('/api/pets/' + petB.data.id, 'PUT', {
