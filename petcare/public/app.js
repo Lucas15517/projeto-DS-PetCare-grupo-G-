@@ -126,7 +126,7 @@ function updateNetworkStatus() {
 
   if (state.offlineReadOnly) {
     status.textContent = online
-      ? 'Conexão restaurada — saia e entre novamente para atualizar os dados e habilitar alterações.'
+      ? 'A consulta está em modo somente leitura. Saia e entre novamente quando o servidor estiver disponível para atualizar os dados.'
       : 'Sem conexão — exibindo a última consulta salva em modo somente leitura.';
   } else {
     status.textContent = online
@@ -562,6 +562,7 @@ async function restoreSession() {
     if (!navigator.onLine && restoreOfflineSnapshot()) {
       authView();
       view('home');
+      updateNetworkStatus();
       notify('Modo offline: exibindo a última consulta salva. A tela está em somente leitura.');
     }
     return;
@@ -588,6 +589,7 @@ async function restoreSession() {
     if (restoreOfflineSnapshot()) {
       authView();
       view('home');
+      updateNetworkStatus();
       notify('Modo offline: exibindo a última consulta salva. A tela está em somente leitura.');
       return;
     }
