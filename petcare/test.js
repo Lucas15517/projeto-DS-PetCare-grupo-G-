@@ -243,15 +243,22 @@ test('PetCare: segurança, agendamentos, histórico, orientações e limites', a
     assert.equal(rejected.status, 401);
   });
 
-  await t.test('proxy só é confiável quando TRUST_PROXY=1', () => {
+  await t.test('proxy só é confiável quando TRUST_PROXY=1 e usa X-Real-IP', () => {
     const fakeRequest = {
-      headers: { 'x-forwarded-for': '203.0.113.8, 10.0.0.2' },
+      headers: {
+        'x-forwarded-for': '203.0.113.8, 10.0.0.2',
+        'x-real-ip': '198.51.100.14'
+      },
       socket: { remoteAddress: '10.0.0.1' }
     };
     process.env.TRUST_PROXY = '0';
     assert.equal(_testing.clientIp(fakeRequest), '10.0.0.1');
     process.env.TRUST_PROXY = '1';
-    assert.equal(_testing.clientIp(fakeRequest), '203.0.113.8');
+    assert.equal(_testing.clientIp(fakeRequest), '198.51.100.14');
+
+    // X-Forwarded-For não é usado como identidade de rate limit.
+    delete fakeRequest.headers['x-real-ip'];
+    assert.equal(_testing.clientIp(fakeRequest), '10.0.0.1');
     process.env.TRUST_PROXY = '0';
   });
 
