@@ -458,7 +458,12 @@ function renderAppointments() {
     if (!state.offlineReadOnly && appointment.status === 'agendado') {
       const actions = document.createElement('div');
       actions.className = 'actions';
-      actions.append(makeButton('Concluir', () => updateStatus(appointment.id, 'concluido')));
+      const scheduledAt = Date.parse(
+        appointment.date + 'T' + appointment.time + ':00-03:00'
+      );
+      if (Number.isFinite(scheduledAt) && scheduledAt <= Date.now()) {
+        actions.append(makeButton('Concluir', () => updateStatus(appointment.id, 'concluido')));
+      }
       actions.append(makeButton('Cancelar', () => updateStatus(appointment.id, 'cancelado')));
       item.append(actions);
     }
