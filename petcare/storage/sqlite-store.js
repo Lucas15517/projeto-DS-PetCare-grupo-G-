@@ -35,7 +35,12 @@ function value(row, key, fallback) {
 
 function migrate() {
   const currentVersion = db.prepare('PRAGMA user_version').get().user_version;
-  if (currentVersion >= 2) return;
+  if (currentVersion >= 2) {
+    // PRAGMA foreign_keys é por conexão e começa desativado no SQLite.
+    // Reative também quando o banco já estiver na versão atual.
+    db.exec('PRAGMA foreign_keys = ON;');
+    return;
+  }
 
   db.exec('PRAGMA foreign_keys = OFF; BEGIN IMMEDIATE;');
   const legacy = {};
@@ -241,5 +246,10 @@ module.exports = {
       status, appointmentId, userId
     );
     return result.changes > 0;
+  },
+  _testing: {
+    foreignKeysEnabled() {
+      return db.prepare('PRAGMA foreign_keys').get().foreign_keys;
+    }
   }
 };
