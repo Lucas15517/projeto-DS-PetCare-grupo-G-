@@ -43,7 +43,7 @@ Demonstração sugerida:
 
 “Na versão SQLite, o modelo relacional tem quatro tabelas: USERS, PETS, SERVICES e APPOINTMENTS. Uma conta pode ter vários pets e agendamentos; um pet pode ter vários atendimentos. O histórico é preservado quando um pet é arquivado.”
 
-“Há dois modos de armazenamento para compatibilidade. A pasta escola-node20 usa JSON local para funcionar em computadores com Node 20. A pasta online-sqlite usa o banco relacional SQLite com Node 22.5 ou superior, com Node 24 recomendado. As duas usam a mesma interface, as mesmas rotas e as mesmas regras. Por isso, na demonstração pela pasta escola-node20, não devemos dizer que estamos usando SQLite.”
+“Há dois modos de armazenamento para compatibilidade. A pasta escola-node20 usa JSON local para funcionar em computadores com Node 20. A pasta online-sqlite usa o banco relacional SQLite com Node 22.13 ou superior, com Node 24 recomendado. As duas usam a mesma interface, as mesmas rotas e as mesmas regras. Por isso, na demonstração pela pasta escola-node20, não devemos dizer que estamos usando SQLite.”
 
 “Na segurança, as senhas são protegidas com scrypt e salt individual; os tokens são assinados com HMAC e expiram em oito horas. As rotas privadas verificam a conta autenticada e o logout invalida tokens anteriores.”
 
@@ -82,7 +82,7 @@ Demonstração sugerida:
 ## Observações para não dar informação incorreta
 
 - Na demonstração Node 20 da escola, o armazenamento é JSON local; não chamar isso de SQLite.
-- SQLite é o modo online-sqlite, Node 22.5+ (recomendado Node 24), e foi coberto pelo CI.
+- SQLite é o modo online-sqlite, Node 22.13+ (recomendado Node 24), e foi coberto pelo CI.
 - O site não está publicado automaticamente por estar no GitHub.
 - O PWA instalável exige HTTPS e navegador compatível; a consulta offline é somente leitura.
 - O assistente usa regras; não é IA generativa, diagnóstico ou aconselhamento veterinário.
