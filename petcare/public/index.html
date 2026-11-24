@@ -3,24 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#126b62">
   <meta name="description" content="PetCare: cadastre seus pets, conheça os serviços e agende atendimentos com praticidade.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <title>PetCare | Gestão de cuidados para pets</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
   <header class="site-header">
     <div class="header-inner">
-      <div class="brand" aria-label="PetCare"><span aria-hidden="true">🐾</span> PetCare
+      <div class="brand" aria-label="PetCare">
+        <span aria-hidden="true">🐾</span> PetCare
         <small>Seu pet em boas mãos</small>
       </div>
       <div class="header-actions">
         <div class="access-tools" role="group" aria-label="Configurações de acessibilidade">
           <button id="fontIncrease" class="tool-button" type="button" aria-label="Aumentar tamanho do texto" title="Aumentar texto">A+</button>
           <button id="fontReset" class="tool-button" type="button" aria-label="Restaurar tamanho do texto" title="Texto normal">A</button>
-          <button id="contrastToggle" class="tool-button" type="button" aria-pressed="false" title="Alternar alto contraste">◐ <span class="sr-only">Alto contraste</span></button>
+          <button id="contrastToggle" class="tool-button" type="button" aria-label="Alternar alto contraste" aria-pressed="false" title="Alto contraste">◐</button>
         </div>
+        <button id="installApp" class="tool-button install-button" type="button" hidden>Instalar aplicativo</button>
         <nav id="nav" aria-label="Navegação principal" hidden>
           <button type="button" data-view="home">Início</button>
           <button type="button" data-view="pets">Meus pets</button>
@@ -33,6 +39,8 @@
   </header>
 
   <main id="conteudo" tabindex="-1">
+    <p id="networkStatus" class="network-status" role="status" aria-live="polite"></p>
+
     <section id="auth" class="auth card" aria-labelledby="authTitle">
       <span class="eyebrow">GESTÃO DE PET SHOP</span>
       <h1 id="authTitle">Bem-vindo ao PetCare <span aria-hidden="true">🐶</span></h1>
@@ -51,6 +59,30 @@
         <button class="primary full" type="submit" id="authSubmit">Entrar</button>
       </form>
       <button class="link" type="button" id="switchAuth">Não tenho conta. Cadastrar</button>
+      <button class="outline full" type="button" id="showFundamentals">Conhecer os 10 fundamentos</button>
+    </section>
+
+    <section id="fundamentals" class="card fundamentals-public" aria-labelledby="fundamentalsTitle" hidden>
+      <div class="heading">
+        <div>
+          <span class="eyebrow">PROJETO MULTIDISCIPLINAR</span>
+          <h2 id="fundamentalsTitle">10 fundamentos no PetCare</h2>
+        </div>
+        <button type="button" id="hideFundamentals" aria-label="Fechar os fundamentos">Fechar</button>
+      </div>
+      <div class="fundamental-grid">
+        <article><h3>1. HTML semântico</h3><p>Estrutura organizada com cabeçalho, navegação, seções, formulários e rótulos.</p></article>
+        <article><h3>2. CSS e responsividade</h3><p>Layout que se adapta a computadores e celulares.</p></article>
+        <article><h3>3. JavaScript</h3><p>Eventos, atualização das telas e comunicação com a API.</p></article>
+        <article><h3>4. Acessibilidade</h3><p>Foco visível, contraste, texto ampliável e navegação por teclado.</p></article>
+        <article><h3>5. UX/UI</h3><p>Fluxo simples entre cadastro de pets, serviços e agendamentos.</p></article>
+        <article><h3>6. Validação e feedback</h3><p>Validação no navegador e no servidor, com mensagens claras.</p></article>
+        <article><h3>7. APIs REST</h3><p>Rotas HTTP para cadastro, consulta, edição e agendamento.</p></article>
+        <article><h3>8. Banco de dados e CRUD</h3><p>Persistência de usuários, pets, serviços e histórico de atendimentos.</p></article>
+        <article><h3>9. Login e segurança</h3><p>Hash de senha, token assinado, autorização por usuário e logout revogável.</p></article>
+        <article><h3>10. Testes e versionamento</h3><p>Testes automatizados e fluxo de revisão no GitHub.</p></article>
+      </div>
+      <p class="field-hint">Também há um assistente educativo de cuidados baseado em regras por espécie e idade.</p>
     </section>
 
     <section id="app" hidden>
@@ -63,7 +95,8 @@
         </div>
         <div class="hero-art" aria-hidden="true">🐕<span>🐈</span></div>
       </div>
-      <div id="home" class="view" aria-labelledby="homeTitle">
+
+      <section id="home" class="view" aria-labelledby="homeTitle">
         <h2 id="homeTitle">Olá, <span id="username"></span>!</h2>
         <p class="muted">Acompanhe seus pets e seus próximos cuidados em um só lugar.</p>
         <div class="stats" aria-label="Resumo da conta">
@@ -77,18 +110,23 @@
           <article class="card"><span aria-hidden="true">🛁</span><strong>2. Escolha um serviço</strong><p>Consulte os preços disponíveis.</p></article>
           <article class="card"><span aria-hidden="true">📅</span><strong>3. Reserve um horário</strong><p>Receba confirmação ou aviso de conflito.</p></article>
         </div>
-      </div>
+      </section>
 
       <section id="pets" class="view" aria-labelledby="petsTitle" hidden>
-        <div class="heading"><div><h2 id="petsTitle">Meus pets</h2><p class="muted">Cadastre e atualize os animais associados à sua conta.</p></div>
-          <button class="primary" type="button" id="addPet">+ Novo pet</button></div>
+        <div class="heading">
+          <div><h2 id="petsTitle">Meus pets</h2><p class="muted">Cadastre e atualize os animais associados à sua conta.</p></div>
+          <button class="primary" type="button" id="addPet">+ Novo pet</button>
+        </div>
         <div id="petList" class="cards" aria-live="polite"></div>
+        <section id="careAdvice" class="care-advice card" aria-live="polite" aria-labelledby="careTitle" hidden></section>
       </section>
 
       <section id="appointments" class="view" aria-labelledby="appointmentsTitle" hidden>
-        <div class="heading"><div><h2 id="appointmentsTitle">Agendamentos</h2><p class="muted">Organize seus atendimentos e confira os horários reservados.</p></div>
-          <button class="primary" type="button" id="addAg">+ Novo agendamento</button></div>
-        <p class="hint"><span aria-hidden="true">🔒</span> Cada horário só pode ser reservado uma vez. Se estiver ocupado, o sistema apresenta uma mensagem clara.</p>
+        <div class="heading">
+          <div><h2 id="appointmentsTitle">Agendamentos</h2><p class="muted">Organize seus atendimentos e confira os horários reservados.</p></div>
+          <button class="primary" type="button" id="addAg">+ Novo agendamento</button>
+        </div>
+        <p class="hint"><span aria-hidden="true">🔒</span> Cada horário do pet shop só pode ser reservado uma vez. O histórico é mantido quando um pet é arquivado.</p>
         <div id="agList" class="cards" aria-live="polite"></div>
       </section>
 
@@ -97,7 +135,6 @@
         <p class="muted">Escolha o cuidado ideal para seu animal de estimação.</p>
         <div id="serviceList" class="stats"></div>
       </section>
-
     </section>
   </main>
 

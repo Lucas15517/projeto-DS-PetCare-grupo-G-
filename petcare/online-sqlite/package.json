@@ -1,1 +1,11 @@
-{"name":"petcare-escolar","version":"2.0.0","private":true,"scripts":{"start":"node server.js","test":"node test.js"},"engines":{"node":">=22"}}
+{
+  "name": "petcare-online-sqlite",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
