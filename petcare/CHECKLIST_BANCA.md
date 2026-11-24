@@ -76,7 +76,7 @@ O acesso pelo IPv4 é local, não é hospedagem pública. Se o Wi-Fi da escola i
 | Situação | Modo | Armazenamento |
 |---|---|---|
 | Computador escolar com Node 20 | escola-node20 | JSON local |
-| Execução SQLite | online-sqlite com Node 22.5+ (Node 24 recomendado) | SQLite relacional |
+| Execução SQLite | online-sqlite com Node 22.13+ (Node 24 recomendado) | SQLite relacional |
 | GitHub Actions Node 20 | ambiente de teste | JSON |
 | GitHub Actions Node 24 | ambiente de teste | SQLite |
 
