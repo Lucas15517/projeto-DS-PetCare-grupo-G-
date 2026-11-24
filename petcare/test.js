@@ -33,6 +33,19 @@ test('PetCare: segurança, agendamentos, histórico, orientações e limites', a
     return { status: response.status, data };
   }
 
+  if (store.mode === 'sqlite') {
+    await t.test('SQLite mantém as chaves estrangeiras ativas', () => {
+      assert.equal(store._testing.foreignKeysEnabled(), 1);
+      assert.throws(() => store.createPet({
+        user_id: 999999,
+        name: 'Pet inválido',
+        species: 'Cachorro',
+        breed: '',
+        age: 1
+      }), /FOREIGN KEY constraint failed/);
+    });
+  }
+
   await t.test('serviços usam preços inteiros em centavos', async () => {
     const result = await request('/api/services');
     assert.equal(result.status, 200);
