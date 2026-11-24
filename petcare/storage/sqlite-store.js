@@ -228,7 +228,7 @@ module.exports = {
     return db.prepare('SELECT id, name, price_cents FROM services WHERE id = ?').get(id) || null;
   },
   listAppointments(userId) {
-    return db.prepare('SELECT a.id, a.user_id, a.pet_id, a.service_id, a.date, a.time, a.status, a.note, a.created_at, p.name AS pet_name, s.name AS service_name, s.price_cents FROM appointments a JOIN pets p ON p.id = a.pet_id JOIN services s ON s.id = a.service_id WHERE a.user_id = ? ORDER BY a.date DESC, a.time DESC').all(userId);
+    return db.prepare('SELECT a.id, a.user_id, a.pet_id, a.service_id, a.date, a.time, a.status, a.note, a.created_at, p.name AS pet_name, s.name AS service_name, s.price_cents FROM appointments a JOIN pets p ON p.id = a.pet_id AND p.user_id = a.user_id JOIN services s ON s.id = a.service_id WHERE a.user_id = ? ORDER BY a.date DESC, a.time DESC').all(userId);
   },
   createAppointment(input) {
     try {
