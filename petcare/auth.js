@@ -14,8 +14,10 @@ function createAuth(store, secret) {
 
   function clientIp(req) {
     if (process.env.TRUST_PROXY === '1') {
-      const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-      if (net.isIP(forwarded)) return forwarded;
+      // Railway's public edge overwrites X-Real-IP with the visitor IP.
+      // Do not trust X-Forwarded-For: its hop order depends on the proxy chain.
+      const realIp = String(req.headers['x-real-ip'] || '').trim();
+      if (net.isIP(realIp)) return realIp;
     }
     return req.socket.remoteAddress || 'local';
   }
