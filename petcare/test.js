@@ -202,6 +202,17 @@ test('PetCare: segurança, agendamentos, histórico, orientações e limites', a
   const winner = first.status === 201
     ? { id: first.data.id, token: accountA.data.token, petId: petA.data.id }
     : { id: second.data.id, token: accountB.data.token, petId: petB.data.id };
+
+  await t.test('não permite concluir antes do horário reservado', async () => {
+    const result = await request(
+      '/api/appointments/' + winner.id,
+      'PATCH',
+      { status: 'concluido' },
+      winner.token
+    );
+    assert.equal(result.status, 400);
+  });
+
   const loser = first.status === 409
     ? { booking: bookingA, token: accountA.data.token }
     : { booking: bookingB, token: accountB.data.token };
