@@ -84,14 +84,16 @@ function saveOfflineSnapshot() {
 }
 
 function restoreOfflineSnapshot() {
+  // Dados pessoais em cache só podem ser exibidos enquanto a sessão autenticada
+  // desta aba ainda existir. Não abra o cache offline para qualquer visitante.
   const userId = localStorage.getItem('petcare_last_user_id');
   const tokenUserId = state.token.split('.')[0];
-  if (!userId || !/^\d+$/.test(userId)) return false;
-  if (tokenUserId && String(userId) !== tokenUserId) return false;
+  if (!userId || !/^\d+$/.test(userId) || !tokenUserId) return false;
+  if (String(userId) !== tokenUserId) return false;
 
   try {
     const snapshot = JSON.parse(localStorage.getItem(cacheKey(userId)) || 'null');
-    if (!snapshot || !snapshot.user || String(snapshot.user.id) !== String(userId)) return false;
+    if (!snapshot || !snapshot.user || String(snapshot.user.id) !== tokenUserId) return false;
     state.user = snapshot.user;
     state.pets = Array.isArray(snapshot.pets) ? snapshot.pets : [];
     state.services = Array.isArray(snapshot.services) ? snapshot.services : [];
@@ -559,12 +561,7 @@ if ('serviceWorker' in navigator) {
 
 async function restoreSession() {
   if (!state.token) {
-    if (!navigator.onLine && restoreOfflineSnapshot()) {
-      authView();
-      view('home');
-      updateNetworkStatus();
-      notify('Modo offline: exibindo a última consulta salva. A tela está em somente leitura.');
-    }
+    // Sem uma sessão autenticada nesta aba, nunca revelar o cache pessoal.
     return;
   }
 
