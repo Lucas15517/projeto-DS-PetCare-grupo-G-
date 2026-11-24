@@ -10,6 +10,7 @@ on:
     branches:
       - main
       - RamoDoProf
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,7 +24,7 @@ jobs:
         working-directory: petcare
     env:
       PETCARE_STORAGE: json
-      PETCARE_DATA_DIR: ${{ runner.temp }}/petcare-json
+      PETCARE_DATA_DIR: /tmp/petcare-json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +45,7 @@ jobs:
         working-directory: petcare
     env:
       PETCARE_STORAGE: sqlite
-      PETCARE_DATA_DIR: ${{ runner.temp }}/petcare-sqlite
+      PETCARE_DATA_DIR: /tmp/petcare-sqlite
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
