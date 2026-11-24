@@ -7,7 +7,8 @@ const state = {
   pets: [],
   services: [],
   appointments: [],
-  registering: false
+  registering: false,
+  offlineReadOnly: false
 };
 
 function makeText(tag, value) {
@@ -85,14 +86,17 @@ function saveOfflineSnapshot() {
 function restoreOfflineSnapshot() {
   const userId = localStorage.getItem('petcare_last_user_id');
   const tokenUserId = state.token.split('.')[0];
-  if (!userId || !tokenUserId || String(userId) !== tokenUserId) return false;
+  if (!userId || !/^\d+$/.test(userId)) return false;
+  if (tokenUserId && String(userId) !== tokenUserId) return false;
+
   try {
     const snapshot = JSON.parse(localStorage.getItem(cacheKey(userId)) || 'null');
-    if (!snapshot || !snapshot.user || String(snapshot.user.id) !== tokenUserId) return false;
+    if (!snapshot || !snapshot.user || String(snapshot.user.id) !== String(userId)) return false;
     state.user = snapshot.user;
-    state.pets = snapshot.pets || [];
-    state.services = snapshot.services || [];
-    state.appointments = snapshot.appointments || [];
+    state.pets = Array.isArray(snapshot.pets) ? snapshot.pets : [];
+    state.services = Array.isArray(snapshot.services) ? snapshot.services : [];
+    state.appointments = Array.isArray(snapshot.appointments) ? snapshot.appointments : [];
+    state.offlineReadOnly = true;
     renderAll();
     return true;
   } catch {
@@ -119,17 +123,31 @@ async function flushPendingLogout() {
 function updateNetworkStatus() {
   const status = $('#networkStatus');
   const online = navigator.onLine;
-  status.textContent = online
-    ? 'Conectado — alterações serão sincronizadas com o servidor.'
-    : 'Sem conexão — consulta disponível com os últimos dados salvos; alterações exigem internet.';
+
+  if (state.offlineReadOnly) {
+    status.textContent = online
+      ? 'Conexão restaurada — saia e entre novamente para atualizar os dados e habilitar alterações.'
+      : 'Sem conexão — exibindo a última consulta salva em modo somente leitura.';
+  } else {
+    status.textContent = online
+      ? 'Conectado — cadastros e alterações são enviados ao servidor.'
+      : 'Sem conexão — entre novamente quando a conexão voltar para atualizar os dados.';
+  }
   status.dataset.online = String(online);
 }
 
 window.addEventListener('online', () => {
   updateNetworkStatus();
   flushPendingLogout();
+  if (state.offlineReadOnly && state.token) window.location.reload();
 });
-window.addEventListener('offline', updateNetworkStatus);
+window.addEventListener('offline', () => {
+  if (state.user) {
+    state.offlineReadOnly = true;
+    renderAll();
+  }
+  updateNetworkStatus();
+});
 updateNetworkStatus();
 flushPendingLogout();
 
@@ -169,6 +187,8 @@ function authView() {
   $('#auth').hidden = loggedIn;
   $('#app').hidden = !loggedIn;
   $('#nav').hidden = !loggedIn;
+  $('#addPet').disabled = state.offlineReadOnly;
+  $('#addAg').disabled = state.offlineReadOnly;
   if (loggedIn) $('#username').textContent = state.user.name.split(' ')[0];
 }
 
@@ -245,18 +265,25 @@ $('#authForm').addEventListener('submit', async (event) => {
 $('#logout').addEventListener('click', async () => {
   const userId = state.user?.id;
   const token = state.token;
-  try {
-    if (navigator.onLine) {
-      await api('/logout', 'POST', {});
-    } else {
+  let logoutPending = false;
+
+  if (token) {
+    try {
+      if (navigator.onLine) {
+        await api('/logout', 'POST', {});
+      } else {
+        localStorage.setItem('petcare_pending_logout', token);
+        logoutPending = true;
+      }
+    } catch {
       localStorage.setItem('petcare_pending_logout', token);
-    }
-  } catch (error) {
-    localStorage.setItem('petcare_pending_logout', token);
-    if (navigator.onLine) {
-      notify('Sessão encerrada neste dispositivo; a invalidação será reenviada ao servidor.', true);
+      logoutPending = true;
+      if (navigator.onLine) {
+        notify('Sessão encerrada neste dispositivo; a invalidação será reenviada ao servidor.', true);
+      }
     }
   }
+
   if (userId) localStorage.removeItem(cacheKey(userId));
   localStorage.removeItem('petcare_last_user_id');
   state.token = '';
@@ -264,10 +291,13 @@ $('#logout').addEventListener('click', async () => {
   state.pets = [];
   state.services = [];
   state.appointments = [];
+  state.offlineReadOnly = false;
   sessionStorage.removeItem('petcare_token');
   authView();
   if (navigator.onLine) flushPendingLogout();
-  else notify('Sessão encerrada neste dispositivo. A invalidação será enviada quando a conexão voltar.');
+  else if (logoutPending) {
+    notify('Sessão encerrada neste dispositivo. A invalidação será enviada quando a conexão voltar.');
+  }
 });
 
 function renderAll() {
@@ -313,21 +343,24 @@ function renderPets() {
       pet.age + ' ano(s)'
     ].filter(Boolean).join(' • ')));
 
-    const actions = document.createElement('div');
-    actions.className = 'actions';
-    actions.append(makeButton('Editar', () => openPet(pet), '', 'Editar dados de ' + pet.name));
-    actions.append(makeButton('Orientações', () => showCareAdvice(pet), '', 'Gerar orientações para ' + pet.name));
-    actions.append(makeButton('Arquivar', async () => {
-      if (!confirm('Arquivar ' + pet.name + '? O histórico de atendimentos será preservado.')) return;
-      try {
-        await api('/pets/' + pet.id, 'DELETE');
-        await refresh();
-        notify('Pet arquivado; o histórico foi preservado.');
-      } catch (error) {
-        handleError(error);
-      }
-    }, '', 'Arquivar ' + pet.name));
-    item.append(info, actions);
+    if (!state.offlineReadOnly) {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.append(makeButton('Editar', () => openPet(pet), '', 'Editar dados de ' + pet.name));
+      actions.append(makeButton('Orientações', () => showCareAdvice(pet), '', 'Gerar orientações para ' + pet.name));
+      actions.append(makeButton('Arquivar', async () => {
+        if (!confirm('Arquivar ' + pet.name + '? O histórico de atendimentos será preservado.')) return;
+        try {
+          await api('/pets/' + pet.id, 'DELETE');
+          await refresh();
+          notify('Pet arquivado; o histórico foi preservado.');
+        } catch (error) {
+          handleError(error);
+        }
+      }, '', 'Arquivar ' + pet.name));
+      item.append(actions);
+    }
+    item.prepend(info);
     list.append(item);
   });
 }
@@ -420,13 +453,14 @@ function renderAppointments() {
       (appointment.note ? ' • ' + appointment.note : '');
     info.append(makeText('p', details));
 
-    const actions = document.createElement('div');
-    actions.className = 'actions';
-    if (appointment.status === 'agendado') {
+    if (!state.offlineReadOnly && appointment.status === 'agendado') {
+      const actions = document.createElement('div');
+      actions.className = 'actions';
       actions.append(makeButton('Concluir', () => updateStatus(appointment.id, 'concluido')));
       actions.append(makeButton('Cancelar', () => updateStatus(appointment.id, 'cancelado')));
+      item.append(actions);
     }
-    item.append(info, actions);
+    item.prepend(info);
     list.append(item);
   });
 }
@@ -524,9 +558,18 @@ if ('serviceWorker' in navigator) {
 }
 
 async function restoreSession() {
-  if (!state.token) return;
+  if (!state.token) {
+    if (!navigator.onLine && restoreOfflineSnapshot()) {
+      authView();
+      view('home');
+      notify('Modo offline: exibindo a última consulta salva. A tela está em somente leitura.');
+    }
+    return;
+  }
+
   try {
     state.user = await api('/me');
+    state.offlineReadOnly = false;
     authView();
     await refresh();
     view('home');
@@ -537,6 +580,7 @@ async function restoreSession() {
       localStorage.removeItem('petcare_last_user_id');
       state.user = null;
       state.token = '';
+      state.offlineReadOnly = false;
       sessionStorage.removeItem('petcare_token');
       authView();
       return;
@@ -544,11 +588,12 @@ async function restoreSession() {
     if (restoreOfflineSnapshot()) {
       authView();
       view('home');
-      notify('Modo offline: exibindo a última consulta salva. Alterações exigem internet.');
+      notify('Modo offline: exibindo a última consulta salva. A tela está em somente leitura.');
       return;
     }
     state.user = null;
     state.token = '';
+    state.offlineReadOnly = false;
     sessionStorage.removeItem('petcare_token');
     authView();
   }
