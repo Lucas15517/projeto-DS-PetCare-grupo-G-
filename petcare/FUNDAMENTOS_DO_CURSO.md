@@ -20,7 +20,7 @@ O PetCare é um sistema web educacional para cadastro de animais, consulta de se
 ## Observação sobre os dois modos de armazenamento
 
 - **escola-node20:** usa armazenamento JSON local para funcionar no computador da escola com Node 20.
-- **online-sqlite:** usa o banco relacional SQLite com Node 22.5 ou superior (Node 24 recomendado).
+- **online-sqlite:** usa o banco relacional SQLite com Node 22.13 ou superior (Node 24 recomendado).
 - As duas formas usam a mesma interface, rotas, autenticação e regras de negócio.
 
 Não afirmem que a execução em escola-node20 usa SQLite. Na apresentação, expliquem que o modo JSON foi escolhido como alternativa compatível com o computador da escola e que o modo SQLite é separado.
