@@ -50,9 +50,31 @@ module.exports = async function appointmentRoutes(context) {
       send(context.res, 400, { error: 'Status inválido.' });
       return true;
     }
+    const appointmentId = Number(match[1]);
+    if (body.status === 'concluido') {
+      const appointment = store.listAppointments(user.id)
+        .find((item) => item.id === appointmentId);
+      if (!appointment || appointment.status !== 'agendado') {
+        send(context.res, 404, {
+          error: 'Agendamento não encontrado ou já encerrado.'
+        });
+        return true;
+      }
+
+      const scheduledAt = Date.parse(
+        appointment.date + 'T' + appointment.time + ':00-03:00'
+      );
+      if (!Number.isFinite(scheduledAt) || scheduledAt > Date.now()) {
+        send(context.res, 400, {
+          error: 'Um atendimento só pode ser concluído depois do horário reservado.'
+        });
+        return true;
+      }
+    }
+
     const changed = store.updateAppointmentStatus(
       user.id,
-      Number(match[1]),
+      appointmentId,
       body.status
     );
     send(context.res, changed ? 200 : 404, changed
