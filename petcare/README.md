@@ -7,7 +7,7 @@ O PetCare é um sistema web educacional para pet shops de bairro. Permite criar 
 ## O que foi melhorado após a devolutiva
 
 - Limite de 20 tentativas de cadastro/login por minuto e por IP.
-- O cabeçalho X-Forwarded-For só é confiável quando TRUST_PROXY=1 e a aplicação está atrás do proxy confiável da hospedagem.
+- Para rate limit atrás de proxy, TRUST_PROXY=1 permite usar X-Real-IP somente quando o proxy confiável garante esse cabeçalho; X-Forwarded-For não é usado como identidade. Sem essa configuração, o servidor usa o IP da conexão.
 - Datas e horários de agendamento interpretados no fuso de Brasília (UTC-03:00).
 - Logout com invalidação dos tokens anteriores por token_version.
 - Código separado em auth.js, db.js, routes/ e storage/.
