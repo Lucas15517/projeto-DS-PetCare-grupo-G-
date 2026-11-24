@@ -25,7 +25,7 @@ A interface, as rotas, a autenticação e as regras de negócio são compartilha
 | Modo | Armazenamento | Node.js | Uso |
 |---|---|---|---|
 | escola-node20/ | JSON local | 20 ou superior | Demonstração escolar em computador com Node 20 |
-| online-sqlite/ | SQLite relacional | 22.5 ou superior; Node 24 recomendado | Demonstração do banco relacional e hospedagem |
+| online-sqlite/ | SQLite relacional | 22.13 ou superior; Node 24 recomendado | Demonstração do banco relacional e hospedagem |
 
 **Importante para a apresentação:** se o grupo iniciar pela pasta escola-node20, a demonstração usa armazenamento JSON local. O banco relacional SQLite existe no modo online-sqlite e foi validado na automação com Node 24. Não afirmem que a demonstração Node 20 está conectada ao SQLite.
 
@@ -55,7 +55,7 @@ O armazenamento escolar é um arquivo JSON local. Ele é útil para a demonstra�
 
 ## Como executar a versão SQLite
 
-Na pasta petcare/online-sqlite/, execute node server.js com Node 22.5 ou superior (Node 24 recomendado). O SQLite usa petcare/data/petcare.sqlite localmente. Em produção, configure volume persistente e PETCARE_SECRET.
+Na pasta petcare/online-sqlite/, execute node server.js com Node 22.13 ou superior (Node 24 recomendado). O SQLite usa petcare/data/petcare.sqlite localmente. Em produção, configure volume persistente e PETCARE_SECRET.
 
 Para testar, na pasta petcare execute:
 
