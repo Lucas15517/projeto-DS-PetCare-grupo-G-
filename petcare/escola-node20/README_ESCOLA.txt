@@ -24,7 +24,7 @@ O iniciador define HOST=0.0.0.0 para aceitar conexões na rede local. Isso não 
 
 ARMAZENAMENTO
 Esta versão usa JSON local para funcionar no computador da escola com Node 20.
-A versão SQLite é executada separadamente em online-sqlite com Node 22.5 ou superior (Node 24 recomendado).
+A versão SQLite é executada separadamente em online-sqlite com Node 22.13 ou superior (Node 24 recomendado).
 As duas usam a mesma interface, API, autenticação e regras de negócio.
 Não afirme que esta execução Node 20 está usando SQLite.
 
