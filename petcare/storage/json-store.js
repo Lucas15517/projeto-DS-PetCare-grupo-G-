@@ -151,7 +151,8 @@ module.exports = {
   },
   listAppointments(userId) {
     return data.appointments
-      .filter((row) => row.user_id === userId)
+      .filter((row) => row.user_id === userId &&
+        data.pets.some((pet) => pet.id === row.pet_id && pet.user_id === userId))
       .map((row) => ({
         ...row,
         pet_name: data.pets.find((pet) => pet.id === row.pet_id)?.name || 'Pet arquivado',
