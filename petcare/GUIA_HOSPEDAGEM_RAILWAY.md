@@ -34,7 +34,7 @@ Cole o valor diretamente em Variables da Railway. Nunca o coloque no GitHub, no 
 
 ## Por que o proxy importa?
 
-Com TRUST_PROXY=1, o servidor usa somente o primeiro endereço válido de X-Forwarded-For, recebido do proxy configurado. Sem essa variável, o cabeçalho é ignorado e o servidor usa o endereço da conexão. Não habilite essa opção em uma instalação exposta diretamente à internet sem um proxy confiável.
+Com TRUST_PROXY=1, o servidor usa X-Real-IP somente se o valor for um endereço IP válido. A documentação de rede pública da Railway identifica X-Real-IP como o endereço remoto do cliente. O servidor não usa X-Forwarded-For para rate limit, pois a ordem de proxies pode variar. Sem TRUST_PROXY=1, usa o endereço da conexão. Não habilite essa opção em tráfego privado/direto ou quando qualquer origem não confiável puder escolher esse cabeçalho.
 
 ## Verificação de segurança
 
@@ -48,4 +48,5 @@ Com TRUST_PROXY=1, o servidor usa somente o primeiro endereço válido de X-Forw
 
 - https://docs.railway.com/guides/monorepo
 - https://docs.railway.com/reference/volumes
+- https://docs.railway.com/networking/public-networking/specs-and-limits
 - https://docs.railway.com/guides/dockerfiles
