@@ -2,41 +2,57 @@ name: PetCare CI
 
 on:
   push:
-    branches: [main, RamoDoProf, "petcare/**"]
+    branches:
+      - main
+      - RamoDoProf
+      - "petcare/**"
   pull_request:
-    branches: [main, RamoDoProf]
+    branches:
+      - main
+      - RamoDoProf
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: Node ${{ matrix.node }} / ${{ matrix.storage }}
+  node20-json:
+    name: Testes Node 20 (JSON)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - node: 20
-            storage: json
-          - node: 24
-            storage: sqlite
     defaults:
       run:
         working-directory: petcare
     env:
-      PETCARE_STORAGE: ${{ matrix.storage }}
-      PETCARE_DATA_DIR: ${{ runner.temp }}/petcare-data
+      PETCARE_STORAGE: json
+      PETCARE_DATA_DIR: ${{ runner.temp }}/petcare-json
     steps:
-      - name: Baixar o repositório
-        uses: actions/checkout@v4
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-      - name: Formatar e verificar o código
+          node-version: 20
+      - name: Formatar e verificar
         run: |
           npx --yes prettier@3 --write server.js auth.js db.js storage routes public test.js
           npx --yes prettier@3 --check server.js auth.js db.js storage routes public test.js
-      - name: Executar testes
+      - name: Testes automatizados
+        run: npm test
+
+  node24-sqlite:
+    name: Testes Node 24 (SQLite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: petcare
+    env:
+      PETCARE_STORAGE: sqlite
+      PETCARE_DATA_DIR: ${{ runner.temp }}/petcare-sqlite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Formatar e verificar
+        run: |
+          npx --yes prettier@3 --write server.js auth.js db.js storage routes public test.js
+          npx --yes prettier@3 --check server.js auth.js db.js storage routes public test.js
+      - name: Testes automatizados
         run: npm test
