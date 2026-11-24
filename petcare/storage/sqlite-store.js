@@ -4,9 +4,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 
+const legacyDirectory = path.join(__dirname, '..', 'online-sqlite', 'data');
+const legacyFile = path.join(legacyDirectory, 'petcare.sqlite');
+const defaultDirectory = fs.existsSync(legacyFile) ? legacyDirectory : path.join(__dirname, '..', 'data');
 const directory = process.env.PETCARE_DATA_DIR ||
   process.env.RAILWAY_VOLUME_MOUNT_PATH ||
-  path.join(__dirname, '..', 'data');
+  defaultDirectory;
 
 if (process.env.NODE_ENV === 'production' &&
     !process.env.PETCARE_DATA_DIR && !process.env.RAILWAY_VOLUME_MOUNT_PATH) {

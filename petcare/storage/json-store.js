@@ -3,7 +3,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const directory = process.env.PETCARE_DATA_DIR || path.join(__dirname, '..', 'data');
+const legacyDirectory = path.join(__dirname, '..', 'escola-node20', 'data');
+const legacyFile = path.join(legacyDirectory, 'petcare-escola.json');
+const defaultDirectory = fs.existsSync(legacyFile) ? legacyDirectory : path.join(__dirname, '..', 'data');
+const directory = process.env.PETCARE_DATA_DIR || defaultDirectory;
 fs.mkdirSync(directory, { recursive: true });
 const filename = path.join(directory, 'petcare-escola.json');
 

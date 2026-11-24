@@ -84,10 +84,11 @@ function saveOfflineSnapshot() {
 
 function restoreOfflineSnapshot() {
   const userId = localStorage.getItem('petcare_last_user_id');
-  if (!userId) return false;
+  const tokenUserId = state.token.split('.')[0];
+  if (!userId || !tokenUserId || String(userId) !== tokenUserId) return false;
   try {
     const snapshot = JSON.parse(localStorage.getItem(cacheKey(userId)) || 'null');
-    if (!snapshot || !snapshot.user) return false;
+    if (!snapshot || !snapshot.user || String(snapshot.user.id) !== tokenUserId) return false;
     state.user = snapshot.user;
     state.pets = snapshot.pets || [];
     state.services = snapshot.services || [];
