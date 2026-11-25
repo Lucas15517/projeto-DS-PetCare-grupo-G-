@@ -1,0 +1,15 @@
+{
+  "name": "petcare-grupo-g",
+  "version": "2.1.0",
+  "private": true,
+  "description": "Sistema educacional de cadastro de pets e agendamento de serviços",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test.js",
+    "format": "npx --yes prettier@3 --write server.js auth.js db.js storage routes public test.js",
+    "format:check": "npx --yes prettier@3 --check server.js auth.js db.js storage routes public test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

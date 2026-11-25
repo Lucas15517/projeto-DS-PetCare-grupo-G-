@@ -1,0 +1,62 @@
+name: PetCare CI
+
+on:
+  push:
+    branches:
+      - main
+      - RamoDoProf
+  pull_request:
+    branches:
+      - main
+      - RamoDoProf
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: petcare-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node20-json:
+    name: Testes Node 20 (JSON)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: petcare
+    env:
+      PETCARE_STORAGE: json
+      PETCARE_DATA_DIR: /tmp/petcare-json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Formatar e verificar
+        run: |
+          npx --yes prettier@3 --write server.js auth.js db.js storage routes public test.js
+          npx --yes prettier@3 --check server.js auth.js db.js storage routes public test.js
+      - name: Testes automatizados
+        run: npm test
+
+  node24-sqlite:
+    name: Testes Node 24 (SQLite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: petcare
+    env:
+      PETCARE_STORAGE: sqlite
+      PETCARE_DATA_DIR: /tmp/petcare-sqlite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Formatar e verificar
+        run: |
+          npx --yes prettier@3 --write server.js auth.js db.js storage routes public test.js
+          npx --yes prettier@3 --check server.js auth.js db.js storage routes public test.js
+      - name: Testes automatizados
+        run: npm test
